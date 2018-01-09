@@ -10,6 +10,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import auth.FireBaseAuthModule;
+import auth.LoginAuth;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -50,24 +55,23 @@ import io.netty.util.CharsetUtil;
  */
 
 public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
-
-    private ChannelGroup allUsers;
-    private List<ChannelGroup> lobbies = new ArrayList<ChannelGroup>();
-    private final AttributeKey<String> PROTOCOLKEY = AttributeKey.valueOf("protocol");
-
     private Channel ch;
+    private LoginAuth loginAuth_;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ch = ctx.channel();
     }
 
-    public ServerAuthHandler() {
+    @Inject
+    public ServerAuthHandler(LoginAuth loginAuth) {
+        this.loginAuth_ = loginAuth;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println("[ServerAuthHandler] Auth Handler Called");
+        System.out.println("[ServerAuthHandler] Test:" + this.loginAuth_.getLoginUserId("DEF"));
         if (!(msg instanceof ByteBuf)) {
             ctx.close();
             throw new Exception("[ServerAuthHandler] Bad data type received");

@@ -1,3 +1,6 @@
+import auth.FireBaseAuthModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -41,6 +44,8 @@ public class MainServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
+        Injector authInjector = Guice.createInjector(new FireBaseAuthModule());
+        final ServerAuthHandler serverAuthHandler = authInjector.getInstance(ServerAuthHandler.class);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -49,7 +54,7 @@ public class MainServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast("authHandler", new ServerAuthHandler());
+                            ch.pipeline().addLast("authHandler", serverAuthHandler);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
