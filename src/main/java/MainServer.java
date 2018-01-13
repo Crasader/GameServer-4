@@ -1,4 +1,7 @@
 import auth.FireBaseAuthModule;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseCredentials;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.netty.bootstrap.ServerBootstrap;
@@ -13,9 +16,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 
-/**
- * Created by Dean on 2014/6/28.
- */
+import java.io.FileInputStream;
+
 public class MainServer {
     private int port;
     public MainServer(int port) {
@@ -30,22 +32,21 @@ public class MainServer {
                 port = Integer.parseInt(args[0]);
             }
             catch (Exception e) {
-                System.out.println("WARNING: Bad argument passed to MAIN. Assigning default port.");
+                System.out.println("WARNING : port parsing failed so default port 8080 is used");
             }
         }
         new MainServer(port).run();
     }
 
     public void run() throws Exception {
+        setUpFireBase();
+
         final SslContext sslCtx;
-        System.out.println("Running Websockets insecure");
         sslCtx = null;
-        System.out.println(" on port " + this.port);
+        System.out.println("Running server on port " + this.port);
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-
-        Injector authInjector = Guice.createInjector(new FireBaseAuthModule());
-        final ServerAuthHandler serverAuthHandler = authInjector.getInstance(ServerAuthHandler.class);
+        final Injector authInjector = Guice.createInjector(new FireBaseAuthModule());
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -54,23 +55,27 @@ public class MainServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast("authHandler", serverAuthHandler);
+                            ch.pipeline().addLast("authHandler", authInjector.getInstance(ServerAuthHandler.class));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
-
-            // Bind and start to accept incoming connections.
-            ChannelFuture f = b.bind(port).sync(); // (7)
-
-            // Wait until the server socket is closed.
-            // In this example, this does not happen, but you can do that to gracefully
-            // shut down your server.
+            ChannelFuture f = b.bind(port).sync();
             f.channel().closeFuture().sync();
 
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
+    }
+
+    private void setUpFireBase() throws Exception {
+        FileInputStream serviceAccount =
+                new FileInputStream("/Users/nghiaround/Desktop/key.json");
+        FirebaseOptions options = new FirebaseOptions.Builder()
+                .setCredential(FirebaseCredentials.fromCertificate(serviceAccount))
+                .setDatabaseUrl("https://pokerg-bf08c.firebaseio.com")
+                .build();
+        FirebaseApp.initializeApp(options);
     }
 }

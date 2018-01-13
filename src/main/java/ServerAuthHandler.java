@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import Schema.Data;
+import Schema.CredentialToken;
 import auth.FireBaseAuthModule;
 import auth.LoginAuth;
 import com.google.inject.Guice;
@@ -38,6 +40,8 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
+import Schema.Message;
+
 
 /**
  * Class used to authenticate users. Current implementation should handle
@@ -71,15 +75,37 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println("[ServerAuthHandler] Auth Handler Called");
-        System.out.println("[ServerAuthHandler] Test:" + this.loginAuth_.getLoginUserId("DEF"));
         if (!(msg instanceof ByteBuf)) {
             ctx.close();
             throw new Exception("[ServerAuthHandler] Bad data type received");
         }
-
-        System.out.println("[ServerAuthHandler] Passed checked instance");
         ByteBuf buf = (ByteBuf) msg;
-        
+        int length = buf.readableBytes();
+
+        byte[] bytes;
+        System.out.println("[ServerAuthHandler] readable bytes:" + length);
+        if (buf.hasArray()) {
+            bytes = buf.array();
+        } else {
+            bytes = new byte[length];
+            buf.getBytes(buf.readerIndex(), bytes);
+        }
+        java.nio.ByteBuffer data = java.nio.ByteBuffer.wrap(bytes);
+        //int PacketSize = data.getInt();
+        Message received = Message.getRootAsMessage(data);
+        if (received.dataType() != Data.CredentialToken) {
+            return;
+        }
+
+        CredentialToken creds;
+        creds = (Schema.CredentialToken)(received.data(new Schema.CredentialToken()));
+        String userId = this.loginAuth_.getLoginUserId(creds.token());
+        if (!userId.isEmpty()) {
+            System.out.println("User is logged in successfully:" + userId);
+        } else {
+            System.out.println("Failed to login");
+        }
+
         return;
     }
 }
