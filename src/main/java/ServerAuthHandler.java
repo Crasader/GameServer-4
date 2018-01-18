@@ -91,7 +91,6 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
             buf.getBytes(buf.readerIndex(), bytes);
         }
         java.nio.ByteBuffer data = java.nio.ByteBuffer.wrap(bytes);
-        //int PacketSize = data.getInt();
         Message received = Message.getRootAsMessage(data);
         if (received.dataType() != Data.CredentialToken) {
             return;

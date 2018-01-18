@@ -1,4 +1,5 @@
 import auth.FireBaseAuthModule;
+import auth.LocalAuthModule;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseCredentials;
@@ -46,7 +47,9 @@ public class MainServer {
         System.out.println("Running server on port " + this.port);
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-        final Injector authInjector = Guice.createInjector(new FireBaseAuthModule());
+
+        //final Injector authInjector = Guice.createInjector(new FireBaseAuthModule());
+        final Injector authInjector = Guice.createInjector(new LocalAuthModule());
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
