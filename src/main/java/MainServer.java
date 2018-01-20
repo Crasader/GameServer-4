@@ -5,14 +5,13 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseCredentials;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import decoder.FlatBuffersDecoder;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
@@ -58,6 +57,8 @@ public class MainServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast("lengthFieldBasedFrameDecoder", createLengthBasedFrameDecoder());
+                            ch.pipeline().addLast("FlatBuffersDecoder", createFlatBuffersDecoder());
                             ch.pipeline().addLast("authHandler", authInjector.getInstance(ServerAuthHandler.class));
                         }
                     })
@@ -70,6 +71,15 @@ public class MainServer {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
+    }
+
+    private ChannelHandler createFlatBuffersDecoder() {
+        return new FlatBuffersDecoder();
+    }
+
+    private ChannelHandler createLengthBasedFrameDecoder()
+    {
+        return new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2);
     }
 
     private void setUpFireBase() throws Exception {

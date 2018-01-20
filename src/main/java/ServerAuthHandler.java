@@ -62,6 +62,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
     private Channel ch;
     private LoginAuth loginAuth_;
 
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ch = ctx.channel();
@@ -73,38 +74,19 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println("[ServerAuthHandler] Auth Handler Called");
-        if (!(msg instanceof ByteBuf)) {
-            ctx.close();
-            throw new Exception("[ServerAuthHandler] Bad data type received");
-        }
-        ByteBuf buf = (ByteBuf) msg;
-        int length = buf.readableBytes();
-
-        byte[] bytes;
-        System.out.println("[ServerAuthHandler] readable bytes:" + length);
-        if (buf.hasArray()) {
-            bytes = buf.array();
-        } else {
-            bytes = new byte[length];
-            buf.getBytes(buf.readerIndex(), bytes);
-        }
-        java.nio.ByteBuffer data = java.nio.ByteBuffer.wrap(bytes);
-        Message received = Message.getRootAsMessage(data);
-        if (received.dataType() != Data.CredentialToken) {
+    public void channelRead(ChannelHandlerContext ctx, Object msgData) throws Exception {
+        Message msg = (Message)msgData;
+        if (msg.dataType() != Data.CredentialToken) {
             return;
         }
-
         CredentialToken creds;
-        creds = (Schema.CredentialToken)(received.data(new Schema.CredentialToken()));
+        creds = (Schema.CredentialToken)(msg.data(new Schema.CredentialToken()));
         String userId = this.loginAuth_.getLoginUserId(creds.token());
         if (!userId.isEmpty()) {
             System.out.println("User is logged in successfully:" + userId);
         } else {
             System.out.println("Failed to login");
         }
-
         return;
     }
 }
