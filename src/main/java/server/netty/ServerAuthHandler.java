@@ -1,3 +1,5 @@
+package server.netty;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -14,6 +16,7 @@ import Schema.Data;
 import Schema.CredentialToken;
 import auth.FireBaseAuthModule;
 import auth.LoginAuth;
+import builder.SchemaBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -51,7 +54,7 @@ import Schema.Message;
  * {username: someUser, password: somePass}
  *
  * Upon successful registration or authentication of the provided
- * username/password pair, ServerAuthHandler removes itself from the pipeline
+ * username/password pair, server.netty.ServerAuthHandler removes itself from the pipeline
  * with handlers that are useful for server functionality.
  *
  * @author jalbatross (Joey Albano)
@@ -84,6 +87,10 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
         String userId = this.loginAuth_.getLoginUserId(creds.token());
         if (!userId.isEmpty()) {
             System.out.println("User is logged in successfully:" + userId);
+            Channel channel = ctx.channel();
+            ChannelFuture future = channel.writeAndFlush(
+                    SchemaBuilder.buildReconnectKey("Some recoonect key").sizedByteArray());
+            future.addListener(ChannelFutureListener.CLOSE);
         } else {
             System.out.println("Failed to login");
         }

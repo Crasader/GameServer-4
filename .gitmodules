@@ -1,3 +1,6 @@
 [submodule "src/PokerSchema"]
 	path = src/PokerSchema
 	url = git@github.com:nghiank/PokerSchema.git
+[submodule "src/main/java/PokerSchema"]
+	path = src/main/java/PokerSchema
+	url = git@github.com:nghiank/PokerSchema.git

@@ -1,3 +1,5 @@
+package server;
+
 import auth.FireBaseAuthModule;
 import auth.LocalAuthModule;
 import com.google.firebase.FirebaseApp;
@@ -15,13 +17,21 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
+import server.netty.ServerAuthHandler;
 
 import java.io.FileInputStream;
 
 public class MainServer {
+
+    public enum Stage {
+        DEV, PROD
+    }
+
     private int port;
-    public MainServer(int port) {
+    private Stage stage;
+    public MainServer(int port, Stage stage) {
         this.port = port;
+        this.stage = stage;
     }
 
     public static void main(String[] args) throws Exception {
@@ -35,7 +45,7 @@ public class MainServer {
                 System.out.println("WARNING : port parsing failed so default port 8080 is used");
             }
         }
-        new MainServer(port).run();
+        new MainServer(port, Stage.DEV).run();
     }
 
     public void run() throws Exception {
@@ -46,9 +56,7 @@ public class MainServer {
         System.out.println("Running server on port " + this.port);
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-
-        //final Injector authInjector = Guice.createInjector(new FireBaseAuthModule());
-        final Injector authInjector = Guice.createInjector(new LocalAuthModule());
+        final Injector authInjector = createAuthInjector();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -80,6 +88,13 @@ public class MainServer {
     private ChannelHandler createLengthBasedFrameDecoder()
     {
         return new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2);
+    }
+
+    private Injector createAuthInjector() {
+        if (stage == Stage.PROD) {
+            return Guice.createInjector(new FireBaseAuthModule());
+        }
+        return Guice.createInjector(new LocalAuthModule());
     }
 
     private void setUpFireBase() throws Exception {
