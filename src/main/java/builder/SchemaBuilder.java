@@ -1,9 +1,9 @@
 package builder;
 
-import Schema.CredentialToken;
-import Schema.Data;
-import Schema.Message;
-import Schema.ReconnectKey;
+import schema.CredentialToken;
+import schema.Data;
+import schema.Message;
+import schema.ReconnectKey;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 public class SchemaBuilder {

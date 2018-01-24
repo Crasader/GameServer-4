@@ -1,10 +1,12 @@
 package decoder;
 
-import Schema.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import schema.Message;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 
 public class FlatBuffersDecoder extends ByteToMessageDecoder {
@@ -24,5 +26,6 @@ public class FlatBuffersDecoder extends ByteToMessageDecoder {
         java.nio.ByteBuffer data = java.nio.ByteBuffer.wrap(bytes);
         Message received = Message.getRootAsMessage(data);
         out.add(received);
+        in.clear();
     }
 }

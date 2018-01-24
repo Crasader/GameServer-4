@@ -1,16 +1,22 @@
 package integration;
 
 import builder.SchemaBuilder;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import schema.Data;
+import schema.Message;
+import schema.ReconnectKey;
 import server.MainServer;
 
 import java.io.DataInputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 
 /**
  * Integration test for the server.
@@ -41,7 +47,7 @@ public class MainServerTest
         });
         thread.start();
         // make sure server gets off the ground
-        Thread.sleep(2000);
+        Thread.sleep(1000);
     }
 
     @AfterClass
@@ -55,19 +61,38 @@ public class MainServerTest
 
     @Test
     public void userLoginSuccessfully() {
+        System.out.println("inside test");
         try {
             Socket socket = new Socket(HOST, PORT);
             // send data
             OutputStream outputStream = socket.getOutputStream();
-            String token = "abcd";
-            byte[] msg = SchemaBuilder.buildCredentialToken(token);
-            outputStream.write(msg.length);
+            String token = "ijk";
+            byte[] msg = SchemaBuilder.buildCredentialToken(token).sizedByteArray();
+
+            ByteBuf lengthBuffer = Unpooled.buffer(2);
+            lengthBuffer.writeShort(msg.length);
+
+            outputStream.write(lengthBuffer.array());
             outputStream.write(msg);
             outputStream.flush();
 
+            Thread.sleep(2000);
             DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-            int bufLength = inputStream.readInt();
-            System.out.println(String.format("Buffer length {}", bufLength));
+
+            if(inputStream.available()>0) {
+                int length = inputStream.readShort();
+                byte[] b = new byte[length];
+                inputStream.read(b, 0, length);
+                java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(b);
+                Message mm = Message.getRootAsMessage(buf);
+                if (mm.dataType() == Data.ReconnectKey) {
+                    ReconnectKey reconnectKey = (ReconnectKey)mm.data(new ReconnectKey());
+                    System.out.println("Value of msg:" + reconnectKey.key());
+                }
+            }
+
+            //inputStream.read(buf, 0, length);
+            //System.out.println("Debugg = " + Arrays.toString(buf));
             socket.close();
         } catch (Exception e) {
             e.printStackTrace();
