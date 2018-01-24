@@ -50,6 +50,8 @@ import schema.CredentialToken;
 import schema.Data;
 import schema.Message;
 import server.netty.util.NettyUtils;
+import server.session.Session;
+import server.session.UserSession;
 
 import javax.xml.validation.Schema;
 
@@ -97,17 +99,23 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
             creds = (CredentialToken) (msg.data(new CredentialToken()));
             String userId = this.loginAuth_.getLoginUserId(creds.token());
             if (!userId.isEmpty()) {
-                LOG.info("User :" + userId + " logged in successfully");
+                LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
                 channel.pipeline().remove(this);
-                ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildReconnectKey("abcdef"));
+                //New session
+                UserSession.UserSessionBuilder sessionBuilder = new UserSession.UserSessionBuilder();
+                Session newSession = sessionBuilder.build();
+                String key = newSession.getId();
+                ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildReconnectKey(key));
                 final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
                 f.addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) {
                         if (!f.isSuccess()) {
                             LOG.info("Send failed" + f.cause());
+                            return;
                         }
+
                         ctx.close();
                     }
                 });
