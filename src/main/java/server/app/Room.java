@@ -14,6 +14,7 @@ public class Room {
 
     public synchronized boolean connectSession(Session session){
         playerSessions.add(session);
+        return true;
     }
 
     public String getName() {

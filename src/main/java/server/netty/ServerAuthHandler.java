@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import schema.CredentialToken;
 import schema.Data;
+import schema.JoinRoomCommand;
 import schema.Message;
 import server.netty.util.NettyUtils;
 import server.session.Session;
@@ -89,15 +90,15 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msgData) throws Exception {
+        LOG.warn("Hmm");
         try {
             Message msg = (Message) msgData;
-            if (msg.dataType() != Data.CredentialToken) {
+            if (msg.dataType() != Data.JoinRoomCommand) {
                 LOG.warn("User hit ServerAuthHandler with wrong msg dataType");
                 return;
             }
-            CredentialToken creds;
-            creds = (CredentialToken) (msg.data(new CredentialToken()));
-            String userId = this.loginAuth_.getLoginUserId(creds.token());
+            JoinRoomCommand cmd = (JoinRoomCommand) (msg.data(new JoinRoomCommand()));
+            String userId = this.loginAuth_.getLoginUserId(cmd.token());
             if (!userId.isEmpty()) {
                 LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
