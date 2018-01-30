@@ -73,11 +73,12 @@ public class UserSession implements Session{
 
     @Override
     public void setAttribute(String key, Object value) {
+        sessionAttributes.put(key, value);
 
     }
 
     @Override
     public Object getAttribute(String key) {
-        return null;
+        return sessionAttributes.get(key);
     }
 }

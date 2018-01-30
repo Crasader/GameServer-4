@@ -23,13 +23,8 @@ public class Room {
         Map<String, Object> attr = new HashMap<>();
         attr.put(UserSession.USER_ID, userId);
         Session newSession = sessionBuilder.sessionAttributes(attr).channel(channel).build();
-        this.connectSession(newSession);
+        playerSessions.add(newSession);
         return newSession;
-    }
-
-    public synchronized boolean connectSession(Session session) {
-        playerSessions.add(session);
-        return true;
     }
 
     public String getId() {
