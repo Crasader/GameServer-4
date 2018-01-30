@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseCredentials;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import decoder.FlatBuffersDecoder;
+import io.grpc.Server;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -18,6 +19,9 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
+import server.app.Room;
+import server.app.RoomFactory;
+import server.app.RoomManager;
 import server.netty.ServerAuthHandler;
 
 import java.io.FileInputStream;
@@ -30,6 +34,7 @@ public class MainServer {
 
     private int port;
     private Stage stage;
+
     public MainServer(int port, Stage stage) {
         this.port = port;
         this.stage = stage;
@@ -41,16 +46,17 @@ public class MainServer {
         if (args.length > 0) {
             try {
                 port = Integer.parseInt(args[0]);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("WARNING : port parsing failed so default port 8080 is used");
             }
         }
         new MainServer(port, Stage.DEV).run();
     }
 
+
     public void run() throws Exception {
         setUpFireBase();
+        setupDefaultRoom();
 
         final SslContext sslCtx;
         sslCtx = null;
@@ -58,6 +64,8 @@ public class MainServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         final Injector authInjector = createAuthInjector();
+        ServerAuthHandler authHandler = authInjector.getInstance(ServerAuthHandler.class);
+        authHandler.setRoomManager(roomManager);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -86,8 +94,7 @@ public class MainServer {
         return new FlatBuffersDecoder();
     }
 
-    private ChannelHandler createLengthBasedFrameDecoder()
-    {
+    private ChannelHandler createLengthBasedFrameDecoder() {
         return new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2);
     }
 
@@ -107,4 +114,13 @@ public class MainServer {
                 .build();
         FirebaseApp.initializeApp(options);
     }
+
+    private void setupDefaultRoom() {
+        RoomFactory factory = new RoomFactory();
+        Room defaultRoom = factory.createRoom("Singapore");
+        roomManager = new RoomManager();
+        roomManager.addRoom(defaultRoom);
+    }
+
+    private RoomManager roomManager;
 }

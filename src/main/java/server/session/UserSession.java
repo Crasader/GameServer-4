@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class UserSession implements Session{
 
+    public static String USER_ID = "userId";
     protected final String id;
     protected final Map<String, Object> sessionAttributes;
     protected final long createdTime;

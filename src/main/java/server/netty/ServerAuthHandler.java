@@ -50,6 +50,8 @@ import schema.CredentialToken;
 import schema.Data;
 import schema.JoinRoomCommand;
 import schema.Message;
+import server.app.Room;
+import server.app.RoomManager;
 import server.netty.util.NettyUtils;
 import server.session.Session;
 import server.session.UserSession;
@@ -75,6 +77,7 @@ import javax.xml.validation.Schema;
 public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
     private Channel ch;
     private LoginAuth loginAuth_;
+    private RoomManager roomManager;
     private static final Logger LOG = LoggerFactory.getLogger(ServerAuthHandler.class);
 
 
@@ -99,13 +102,12 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
             }
             JoinRoomCommand cmd = (JoinRoomCommand) (msg.data(new JoinRoomCommand()));
             String userId = this.loginAuth_.getLoginUserId(cmd.token());
-            if (!userId.isEmpty()) {
+            Room room = roomManager.getRoom(cmd.roomId());
+            if (!userId.isEmpty() && room!=null) {
                 LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
                 channel.pipeline().remove(this);
-                //New session
-                UserSession.UserSessionBuilder sessionBuilder = new UserSession.UserSessionBuilder();
-                Session newSession = sessionBuilder.build();
+                Session newSession = room.playerArrive(userId);
                 String key = newSession.getId();
                 ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildReconnectKey(key));
                 final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
@@ -121,7 +123,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                     }
                 });
             } else {
-                LOG.info("User :" + userId + " logged in successfully");
+                LOG.info("User :" + userId + " failed to login");
             }
             return;
         } finally {
@@ -134,6 +136,10 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
         // Close the connection when an exception is raised.
         cause.printStackTrace();
         ctx.close();
+    }
+
+    public void setRoomManager(RoomManager roomManager) {
+        this.roomManager = roomManager;
     }
 
 
