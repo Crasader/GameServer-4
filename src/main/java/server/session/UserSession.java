@@ -1,5 +1,7 @@
 package server.session;
 
+import io.netty.channel.Channel;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,10 +14,12 @@ public class UserSession implements Session{
     protected final String id;
     protected final Map<String, Object> sessionAttributes;
     protected final long createdTime;
+    protected final Channel channel;
 
     protected UserSession(UserSessionBuilder builder) {
         builder.setUp();
         this.id = builder.id;
+        this.channel = builder.channel;
         sessionAttributes = builder.sessionAttributes;
         createdTime = System.currentTimeMillis();
     }
@@ -24,6 +28,7 @@ public class UserSession implements Session{
         protected String id = null;
         protected Map<String, Object> sessionAttributes = null;
         public static final AtomicLong ID = new AtomicLong(0l);
+        protected Channel channel = null;
 
         public UserSession build() {
             return new UserSession(this);
@@ -44,11 +49,21 @@ public class UserSession implements Session{
             this.sessionAttributes = sessionAttributes;
             return this;
         }
+
+        public UserSessionBuilder channel(Channel channel) {
+            this.channel = channel;
+            return this;
+        }
     }
 
     @Override
     public long getCreatedTime() {
         return createdTime;
+    }
+
+    @Override
+    public Channel getChannel() {
+        return channel;
     }
 
     @Override
@@ -65,5 +80,4 @@ public class UserSession implements Session{
     public Object getAttribute(String key) {
         return null;
     }
-
 }

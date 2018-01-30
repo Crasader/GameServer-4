@@ -1,5 +1,6 @@
 package server.session;
 
+import io.netty.channel.Channel;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

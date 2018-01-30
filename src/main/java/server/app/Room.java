@@ -1,5 +1,6 @@
 package server.app;
 
+import io.netty.channel.Channel;
 import server.session.Session;
 import server.session.UserSession;
 
@@ -16,12 +17,12 @@ public class Room {
         playerSessions = new HashSet<>();
     }
 
-    public synchronized Session playerArrive(String userId) {
+    public synchronized Session playerArrive(String userId, Channel channel) {
         //New session
         UserSession.UserSessionBuilder sessionBuilder = new UserSession.UserSessionBuilder();
         Map<String, Object> attr = new HashMap<>();
         attr.put(UserSession.USER_ID, userId);
-        Session newSession = sessionBuilder.sessionAttributes(attr).build();
+        Session newSession = sessionBuilder.sessionAttributes(attr).channel(channel).build();
         this.connectSession(newSession);
         return newSession;
     }

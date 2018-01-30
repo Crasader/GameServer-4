@@ -20,5 +20,11 @@ public class RoomTest {
         r.connectSession(s);
     }
 
+    @Test
+    public void testNewPlayerArrive() {
+        Room r = new Room("test");
+        String userId = "nghia";
 
+        r.playerArrive(userId, channel);
+    }
 }

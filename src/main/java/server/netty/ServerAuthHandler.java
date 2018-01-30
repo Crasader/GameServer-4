@@ -107,7 +107,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                 LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
                 channel.pipeline().remove(this);
-                Session newSession = room.playerArrive(userId);
+                Session newSession = room.playerArrive(userId, channel);
                 String key = newSession.getId();
                 ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildReconnectKey(key));
                 final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
