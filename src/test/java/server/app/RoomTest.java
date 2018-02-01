@@ -1,30 +1,44 @@
 package server.app;
 
+import io.netty.channel.Channel;
+import org.junit.Before;
 import org.junit.Test;
 import server.session.Session;
 import server.session.UserSession;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class RoomTest {
-    @Test
-    public void newRoom() {
-        Room r = new Room("test");
-        assertEquals(r.getId(), "test");
+    private Room r;
+    private Channel channel;
+    private String userId;
+
+    @Before
+    public void setUp() throws Exception {
+        r = new Room("test");
+        Channel channel = mock(Channel.class);
+        userId = "nghia";
     }
 
     @Test
-    public void connectSession() {
-        Room r = new Room("test");
-        Session s = new UserSession.UserSessionBuilder().build();
-        r.connectSession(s);
+    public void newRoom() {
+        assertEquals(r.getId(), "test");
+        r.setId("abc");
+        assertEquals(r.getId(), "abc");
     }
+
 
     @Test
     public void testNewPlayerArrive() {
-        Room r = new Room("test");
-        String userId = "nghia";
+        Session s = r.playerArrive(userId, channel);
+        assertEquals(s.getAttribute(UserSession.USER_ID), "nghia");
+    }
 
+    @Test
+    public void testEventHandler() {
         r.playerArrive(userId, channel);
+
+
     }
 }

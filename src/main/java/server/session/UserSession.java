@@ -1,6 +1,8 @@
 package server.session;
 
 import io.netty.channel.Channel;
+import server.event.EventHandler;
+import server.event.impl.SessionEventHandler;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,8 +18,10 @@ public class UserSession implements Session{
     protected final long createdTime;
     protected final Channel channel;
 
+    protected EventHandler handler;
+
     protected UserSession(UserSessionBuilder builder) {
-        builder.setUp();
+        builder.setUp(this);
         this.id = builder.id;
         this.channel = builder.channel;
         sessionAttributes = builder.sessionAttributes;
@@ -34,7 +38,7 @@ public class UserSession implements Session{
             return new UserSession(this);
         }
 
-        public void setUp() {
+        public void setUp(Session self) {
             // TODO : probably need to attach hosted server in the ID to support multiple server cases.
             if (this.id == null) {
                 this.id = String.valueOf(ID.incrementAndGet());
@@ -64,6 +68,15 @@ public class UserSession implements Session{
     @Override
     public Channel getChannel() {
         return channel;
+    }
+
+    @Override
+    public EventHandler getHandler() {
+        return this.handler;
+    }
+
+    public void setHandler(EventHandler handler) {
+        this.handler = handler;
     }
 
     @Override

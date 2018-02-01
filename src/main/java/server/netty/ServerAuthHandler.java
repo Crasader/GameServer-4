@@ -52,6 +52,7 @@ import schema.JoinRoomCommand;
 import schema.Message;
 import server.app.Room;
 import server.app.RoomManager;
+import server.event.impl.SessionEventHandler;
 import server.netty.util.NettyUtils;
 import server.session.Session;
 import server.session.UserSession;
@@ -110,7 +111,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                 Session newSession = room.playerArrive(userId, channel);
                 String key = newSession.getId();
                 ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildReconnectKey(key));
-                final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
+                final ChannelFuture f = ctx.write(buf); // (3)
                 f.addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) {
