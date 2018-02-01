@@ -94,7 +94,6 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msgData) throws Exception {
-        LOG.warn("Hmm");
         try {
             Message msg = (Message) msgData;
             if (msg.dataType() != Data.JoinRoomCommand) {
@@ -103,6 +102,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
             }
             JoinRoomCommand cmd = (JoinRoomCommand) (msg.data(new JoinRoomCommand()));
             String userId = this.loginAuth_.getLoginUserId(cmd.token());
+            LOG.info("roomManager=" + roomManager);
             Room room = roomManager.getRoom(cmd.roomId());
             if (!userId.isEmpty() && room!=null) {
                 LOG.info("User: '" + userId + "' logged in successfully");
@@ -140,6 +140,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void setRoomManager(RoomManager roomManager) {
+        LOG.info("setRoommanager=" + roomManager);
         this.roomManager = roomManager;
     }
 

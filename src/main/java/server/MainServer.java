@@ -64,8 +64,6 @@ public class MainServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         final Injector authInjector = createAuthInjector();
-        ServerAuthHandler authHandler = authInjector.getInstance(ServerAuthHandler.class);
-        authHandler.setRoomManager(roomManager);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -76,7 +74,9 @@ public class MainServer {
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast("lengthFieldBasedFrameDecoder", createLengthBasedFrameDecoder());
                             ch.pipeline().addLast("FlatBuffersDecoder", createFlatBuffersDecoder());
-                            ch.pipeline().addLast("authHandler", authInjector.getInstance(ServerAuthHandler.class));
+                            ServerAuthHandler authHandler = authInjector.getInstance(ServerAuthHandler.class);
+                            authHandler.setRoomManager(roomManager);
+                            ch.pipeline().addLast("authHandler", authHandler);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
