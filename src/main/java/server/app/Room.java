@@ -5,6 +5,7 @@ import server.event.Event;
 import server.event.EventDispatcher;
 import server.event.EventHandler;
 import server.event.EventType;
+import server.event.impl.SessionEventHandler;
 import server.session.Session;
 import server.session.UserSession;
 
@@ -28,16 +29,17 @@ public class Room {
         eventDispatcher = new EventDispatcher();
     }
 
-    public synchronized Session playerArrive(String userId, Channel channel) {
+    public synchronized Session playerArrive(String userId, Channel channel, EventHandler sessionHandler) {
         //New session
         UserSession.UserSessionBuilder sessionBuilder = new UserSession.UserSessionBuilder();
         Map<String, Object> attr = new HashMap<>();
         attr.put(UserSession.USER_ID, userId);
         Session newSession = sessionBuilder.sessionAttributes(attr).channel(channel).build();
+        newSession.setHandler(sessionHandler);
         playerSessions.add(newSession);
 
         eventDispatcher.dispatchEvent(new Event(EventType.NEW_PLAYER_ARRIVE), newSession);
-        eventDispatcher.addListener(EventType.NEW_PLAYER_ARRIVE, newSession.getHandler());
+        eventDispatcher.addListener(EventType.NEW_PLAYER_ARRIVE, sessionHandler);
         return newSession;
     }
 

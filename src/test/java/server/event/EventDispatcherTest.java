@@ -1,6 +1,7 @@
 package server.event;
 
 import org.junit.Test;
+import server.session.Session;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,6 +16,10 @@ public class EventDispatcherTest {
         @Override
         public void onEvent(EventType event, Object e) {
             x = (int)e;
+        }
+
+        @Override
+        public void setSession(Session s) {
         }
 
         public int getX() {

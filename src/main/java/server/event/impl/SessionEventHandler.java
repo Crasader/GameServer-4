@@ -7,10 +7,17 @@ import server.session.Session;
 
 public class SessionEventHandler implements EventHandler {
 
+    private Session session;
     public SessionEventHandler() {
     }
 
     @Override
     public void onEvent(EventType event, Object e) {
+
+    }
+
+    @Override
+    public void setSession(Session s) {
+        this.session = s;
     }
 }
