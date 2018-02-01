@@ -1,5 +1,8 @@
 package server.event.impl;
 
+import builder.SchemaBuilder;
+import com.google.flatbuffers.FlatBufferBuilder;
+import io.netty.channel.Channel;
 import org.w3c.dom.events.Event;
 import server.event.EventHandler;
 import server.event.EventType;
@@ -13,7 +16,9 @@ public class SessionEventHandler implements EventHandler {
 
     @Override
     public void onEvent(EventType event, Object e) {
-
+        assert(session != null);
+        Channel channel = session.getChannel();
+        channel.writeAndFlush(SchemaBuilder.buildPlayer(session));
     }
 
     @Override

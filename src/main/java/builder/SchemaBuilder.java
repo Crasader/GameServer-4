@@ -1,10 +1,9 @@
 package builder;
 
-import schema.CredentialToken;
-import schema.Data;
-import schema.Message;
-import schema.ReconnectKey;
+import schema.*;
 import com.google.flatbuffers.FlatBufferBuilder;
+import server.session.Session;
+import server.session.UserSession;
 
 public class SchemaBuilder {
     public static FlatBufferBuilder buildCredentialToken(String token) {
@@ -32,5 +31,14 @@ public class SchemaBuilder {
         int finalData = Message.endMessage(builder);
         builder.finish(finalData);
         return builder;
+    }
+
+    public static FlatBufferBuilder buildPlayer(Session s) {
+        FlatBufferBuilder builder = new FlatBufferBuilder(1);
+        int userId = builder.createString((String)s.getAttribute(UserSession.USER_ID));
+        PlayerInfo.startPlayerInfo(builder);
+        PlayerInfo.addUserId(builder, userId);
+        int playerInfo = PlayerInfo.endPlayerInfo(builder);
+        return buildMessage(builder, playerInfo, Data.PlayerInfo);
     }
 }
