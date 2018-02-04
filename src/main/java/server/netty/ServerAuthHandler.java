@@ -113,7 +113,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                 channel.pipeline().remove(this);
                 Session newSession = room.playerArrive(userInfo, channel, new SessionEventHandler());
                 ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildRoomInfo(room));
-                final ChannelFuture f = ctx.write(buf); // (3)
+                final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
                 f.addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) {
