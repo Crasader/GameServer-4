@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class UserSession implements Session{
-
     public static String USER_ID = "userId";
+    public static String DISPLAY_NAME = "displayName";
     protected final String id;
     protected final Map<String, Object> sessionAttributes;
     protected final long createdTime;

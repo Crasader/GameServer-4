@@ -19,6 +19,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import decoder.FlatBuffersDecoder;
+import info.UserInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -100,17 +101,18 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                 LOG.warn("User hit ServerAuthHandler with wrong msg dataType");
                 return;
             }
+            LOG.info("Join Room..." );
             JoinRoomCommand cmd = (JoinRoomCommand) (msg.data(new JoinRoomCommand()));
             String userId = this.loginAuth_.getLoginUserId(cmd.token());
+            UserInfo userInfo = this.loginAuth_.getUserRecord(userId);
             LOG.info("roomManager=" + roomManager);
             Room room = roomManager.getRoom(cmd.roomId());
             if (!userId.isEmpty() && room!=null) {
                 LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
                 channel.pipeline().remove(this);
-                Session newSession = room.playerArrive(userId, channel, new SessionEventHandler());
-                String key = newSession.getId();
-                ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildReconnectKey(key));
+                Session newSession = room.playerArrive(userInfo, channel, new SessionEventHandler());
+                ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildRoomInfo(room));
                 final ChannelFuture f = ctx.write(buf); // (3)
                 f.addListener(new ChannelFutureListener() {
                     @Override

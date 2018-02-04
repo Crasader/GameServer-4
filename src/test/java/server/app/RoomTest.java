@@ -1,5 +1,6 @@
 package server.app;
 
+import info.UserInfo;
 import io.netty.channel.Channel;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,13 +17,15 @@ import static org.mockito.Mockito.verify;
 public class RoomTest {
     private Room r;
     private Channel channel;
-    private String userId;
+    private UserInfo userInfo;
 
     @Before
     public void setUp() throws Exception {
         r = new Room("test");
         Channel channel = mock(Channel.class);
-        userId = "nghia";
+        userInfo = new UserInfo();
+        userInfo.setUserId("nghia");
+        userInfo.setDisplayName("nghia nguyen");
     }
 
     @Test
@@ -35,20 +38,22 @@ public class RoomTest {
 
     @Test
     public void testNewPlayerArrive() {
-        Session s = r.playerArrive(userId, channel, mock(EventHandler.class));
+        Session s = r.playerArrive(userInfo, channel, mock(EventHandler.class));
         assertEquals(s.getAttribute(UserSession.USER_ID), "nghia");
     }
 
     @Test
     public void testEventHandler() {
         EventHandler fakeHandler = mock(EventHandler.class);
-        Session s = r.playerArrive(userId, channel, fakeHandler);
+        Session s = r.playerArrive(userInfo, channel, fakeHandler);
         s.setHandler(fakeHandler);
         Event e = new Event(EventType.NEW_PLAYER_ARRIVE);
 
-        String userId2 = "userId2";
+        UserInfo userInfo2 = new UserInfo();
+        userInfo2.setUserId("my");
+        userInfo2.setDisplayName("my pham");
         Channel channel2 = mock(Channel.class);
-        Session s2 = r.playerArrive(userId2, channel2, fakeHandler);
+        Session s2 = r.playerArrive(userInfo2, channel2, fakeHandler);
         EventHandler fakeHandler2 = mock(EventHandler.class);
         s2.setHandler(fakeHandler2);
 

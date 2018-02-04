@@ -2,6 +2,7 @@ package builder;
 
 import schema.*;
 import com.google.flatbuffers.FlatBufferBuilder;
+import server.app.Room;
 import server.session.Session;
 import server.session.UserSession;
 
@@ -33,12 +34,32 @@ public class SchemaBuilder {
         return builder;
     }
 
-    public static FlatBufferBuilder buildPlayer(Session s) {
-        FlatBufferBuilder builder = new FlatBufferBuilder(1);
+    public static int createPlayerInfo(FlatBufferBuilder builder, Session s) {
         int userId = builder.createString((String)s.getAttribute(UserSession.USER_ID));
         PlayerInfo.startPlayerInfo(builder);
         PlayerInfo.addUserId(builder, userId);
-        int playerInfo = PlayerInfo.endPlayerInfo(builder);
-        return buildMessage(builder, playerInfo, Data.PlayerInfo);
+        return PlayerInfo.endPlayerInfo(builder);
+    }
+
+    public static FlatBufferBuilder buildPlayer(Session s) {
+        FlatBufferBuilder builder = new FlatBufferBuilder(1);
+        return buildMessage(builder, createPlayerInfo(builder, s), Data.PlayerInfo);
+    }
+
+    public static FlatBufferBuilder buildRoomInfo(Room r) {
+        FlatBufferBuilder builder = new FlatBufferBuilder(1);
+        int len = r.getPlayerSessions().size();
+        int[] players = new int[len];
+        for(int i = 0; i < len; ++i) {
+            Session s = r.getPlayerSessions().get(i);
+            int userId = builder.createString((String)s.getAttribute(UserSession.USER_ID));
+            int displayName = builder.createString((String)s.getAttribute(UserSession.DISPLAY_NAME));
+            players[i] = PlayerInfo.createPlayerInfo(builder, userId, displayName);
+        }
+        int allPlayers = RoomInfo.createPlayersVector(builder, players);
+        RoomInfo.startRoomInfo(builder);
+        RoomInfo.addPlayers(builder, allPlayers);
+        int roomInfo = RoomInfo.endRoomInfo(builder);
+        return buildMessage(builder, roomInfo, Data.RoomInfo);
     }
 }

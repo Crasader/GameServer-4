@@ -1,5 +1,7 @@
 package auth;
 
+import info.UserInfo;
+
 public interface LoginAuth {
     /**
      * Verifies login using token base from third party service. For example Firebase.
@@ -8,4 +10,6 @@ public interface LoginAuth {
      * @return         "" if token are invalid, return userid
      */
     public String getLoginUserId(String token) throws Exception;
+
+    public UserInfo getUserRecord(String userid) throws Exception;
 }
