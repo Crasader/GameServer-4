@@ -1,6 +1,7 @@
 package server.session;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import server.event.EventHandler;
 import server.event.impl.SessionEventHandler;
 
@@ -16,7 +17,7 @@ public class UserSession implements Session{
     protected final String id;
     protected final Map<String, Object> sessionAttributes;
     protected final long createdTime;
-    protected final Channel channel;
+    protected ChannelHandlerContext channel;
 
     protected EventHandler handler;
 
@@ -32,7 +33,7 @@ public class UserSession implements Session{
         protected String id = null;
         protected Map<String, Object> sessionAttributes = null;
         public static final AtomicLong ID = new AtomicLong(0l);
-        protected Channel channel = null;
+        protected ChannelHandlerContext channel = null;
 
         public UserSession build() {
             return new UserSession(this);
@@ -54,7 +55,7 @@ public class UserSession implements Session{
             return this;
         }
 
-        public UserSessionBuilder channel(Channel channel) {
+        public UserSessionBuilder channel(ChannelHandlerContext channel) {
             this.channel = channel;
             return this;
         }
@@ -66,8 +67,13 @@ public class UserSession implements Session{
     }
 
     @Override
-    public Channel getChannel() {
+    public ChannelHandlerContext getChannel() {
         return channel;
+    }
+
+    @Override
+    public void setChannel(ChannelHandlerContext channel) {
+        this.channel = channel;
     }
 
     @Override

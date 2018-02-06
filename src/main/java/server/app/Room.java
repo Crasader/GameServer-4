@@ -1,7 +1,9 @@
 package server.app;
 
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import info.UserInfo;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.event.Event;
@@ -38,7 +40,14 @@ public class Room {
         eventDispatcher = new EventDispatcher();
     }
 
-    public synchronized Session playerArrive(UserInfo userInfo, Channel channel, EventHandler sessionHandler) {
+    public synchronized Session playerArrive(UserInfo userInfo, ChannelHandlerContext channel, EventHandler sessionHandler) {
+        //Check for existing session
+        for(Session s: playerSessions) {
+            if (s.getAttribute(UserSession.USER_ID).equals(userInfo.getUserId())) {
+                s.setChannel(channel);
+                return s;
+            }
+        }
         //New session
         UserSession.UserSessionBuilder sessionBuilder = new UserSession.UserSessionBuilder();
         Map<String, Object> attr = new HashMap<>();

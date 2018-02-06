@@ -36,8 +36,10 @@ public class SchemaBuilder {
 
     public static int createPlayerInfo(FlatBufferBuilder builder, Session s) {
         int userId = builder.createString((String)s.getAttribute(UserSession.USER_ID));
+        int displayName = builder.createString((String)s.getAttribute(UserSession.DISPLAY_NAME));
         PlayerInfo.startPlayerInfo(builder);
         PlayerInfo.addUserId(builder, userId);
+        PlayerInfo.addName(builder, displayName);
         return PlayerInfo.endPlayerInfo(builder);
     }
 
@@ -61,5 +63,16 @@ public class SchemaBuilder {
         RoomInfo.addPlayers(builder, allPlayers);
         int roomInfo = RoomInfo.endRoomInfo(builder);
         return buildMessage(builder, roomInfo, Data.RoomInfo);
+    }
+
+    public static FlatBufferBuilder buildJoinCommand(String roomId, String authToken) {
+        FlatBufferBuilder builder = new FlatBufferBuilder(1);
+        int authTokenInt = builder.createString(authToken);
+        int roomIdInt = builder.createString(roomId);
+        JoinRoomCommand.startJoinRoomCommand(builder);
+        JoinRoomCommand.addRoomId(builder, roomIdInt);
+        JoinRoomCommand.addToken(builder, authTokenInt);
+        int joinRoomCmd = JoinRoomCommand.endJoinRoomCommand(builder);
+        return buildMessage(builder, joinRoomCmd, Data.JoinRoomCommand);
     }
 }

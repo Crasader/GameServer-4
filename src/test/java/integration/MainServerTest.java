@@ -8,15 +8,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import schema.Data;
-import schema.Message;
-import schema.ReconnectKey;
+import schema.*;
 import server.MainServer;
+import server.netty.util.NettyUtils;
 
 import java.io.DataInputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
+
+import static junit.framework.TestCase.assertEquals;
 
 /**
  * Integration test for the server.
@@ -33,9 +34,15 @@ public class MainServerTest
 
 
     private static Thread thread;
+    private static String roomId;
+    private static String token1, token2;
+
 
     @BeforeClass
     public static void setUp() throws Exception {
+        token1 = "userId1";
+        token2 = "userId2";
+        roomId = "Singapore";
         thread = new Thread(() -> {
             try {
                 new MainServer(PORT, MainServer.Stage.DEV).run();
@@ -47,7 +54,7 @@ public class MainServerTest
         });
         thread.start();
         // make sure server gets off the ground
-        Thread.sleep(1000);
+        Thread.sleep(3000);
     }
 
     @AfterClass
@@ -59,45 +66,63 @@ public class MainServerTest
         }
     }
 
-    @Test
-    public void userLoginSuccessfully() {
-        System.out.println("inside test");
-        try {
-            Socket socket = new Socket(HOST, PORT);
-            // send data
-            OutputStream outputStream = socket.getOutputStream();
-            String token = "ijk";
-            byte[] msg = SchemaBuilder.buildCredentialToken(token).sizedByteArray();
+    private Socket userJoinRoom(String token, String roomId) throws Exception {
+        Socket socket = new Socket(HOST, PORT);
+        // send data
+        OutputStream outputStream = socket.getOutputStream();
+        byte[] joinbuf = SchemaBuilder.buildJoinCommand(roomId, token).sizedByteArray();
+        ByteBuf lengthBuffer = Unpooled.buffer(2);
+        lengthBuffer.writeShort(joinbuf.length);
+        outputStream.write(lengthBuffer.array());
+        outputStream.write(joinbuf);
+        outputStream.flush();
+        Thread.sleep(2000);
+        return socket;
+    }
 
-            ByteBuf lengthBuffer = Unpooled.buffer(2);
-            lengthBuffer.writeShort(msg.length);
-
-            outputStream.write(lengthBuffer.array());
-            outputStream.write(msg);
-            outputStream.flush();
-
-            Thread.sleep(2000);
-            DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-
-            if(inputStream.available()>0) {
-                int length = inputStream.readShort();
-                byte[] b = new byte[length];
-                inputStream.read(b, 0, length);
-                java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(b);
-                Message mm = Message.getRootAsMessage(buf);
-                if (mm.dataType() == Data.ReconnectKey) {
-                    ReconnectKey reconnectKey = (ReconnectKey)mm.data(new ReconnectKey());
-                    System.out.println("Value of msg:" + reconnectKey.key());
-                }
-            }
-
-            //inputStream.read(buf, 0, length);
-            //System.out.println("Debugg = " + Arrays.toString(buf));
-            socket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private Message readMessage(Socket socket) throws Exception {
+        DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+        if(inputStream.available()>0) {
+            int length = inputStream.readShort();
+            byte[] b = new byte[length];
+            inputStream.read(b, 0, length);
+            java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(b);
+            Message mm = Message.getRootAsMessage(buf);
+            return mm;
         }
+        return null;
+    }
+
+    @Test
+    public void userJoinedRoomSuccessfully() throws Exception {
+        Socket socket1 = userJoinRoom(token1, roomId);
+        Socket socket2 = userJoinRoom(token2, roomId);
+
+        Message msg1 = readMessage(socket1);
+        Message msg2 = readMessage(socket2);
+        assertEquals(msg1.dataType(), Data.RoomInfo);
+        RoomInfo room1 = (RoomInfo)msg1.data(new RoomInfo());
+        assertEquals(room1.playersLength(), 1);
+        verifyPlayer(room1.players(0), "userId1", "nghiaround");
+
+        assertEquals(msg2.dataType(), Data.RoomInfo);
+        RoomInfo room2 = (RoomInfo)msg2.data(new RoomInfo());
+        assertEquals(room2.playersLength(), 2);
+        verifyPlayer(room2.players(0), "userId1", "nghiaround");
+        verifyPlayer(room2.players(1), "userId2", "nghiaround");
+
+        Message msg3 = readMessage(socket1);
+        assertEquals(msg3.dataType(), Data.PlayerInfo);
+        PlayerInfo player = (PlayerInfo) msg3.data(new PlayerInfo());
+        assertEquals(player.userId(), "userId2");
+        assertEquals(player.name(), "nghiaround");
 
 
     }
+
+    private void verifyPlayer(PlayerInfo player, String userId, String displayName) {
+        assertEquals(player.userId(),  userId);
+        assertEquals(player.name(),  displayName);
+    }
+
 }

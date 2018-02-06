@@ -1,6 +1,7 @@
 package server.session;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import server.event.EventHandler;
 
 public interface Session {
@@ -8,7 +9,8 @@ public interface Session {
     void setAttribute(String key, Object value);
     Object getAttribute(String key);
     long getCreatedTime();
-    Channel getChannel();
+    ChannelHandlerContext getChannel();
+    void setChannel(ChannelHandlerContext channel);
 
     EventHandler getHandler();
     void setHandler(EventHandler e);

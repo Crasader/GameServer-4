@@ -38,6 +38,7 @@ public class SchemaBuilderTest {
         assertEquals(msg.dataType(), Data.PlayerInfo);
         PlayerInfo player = (PlayerInfo)msg.data(new PlayerInfo());
         assertEquals(player.userId(), "userId");
+        assertEquals(player.name(), "nghia");
     }
 
     @Test

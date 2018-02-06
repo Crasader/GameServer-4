@@ -111,7 +111,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                 LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
                 channel.pipeline().remove(this);
-                Session newSession = room.playerArrive(userInfo, channel, new SessionEventHandler());
+                Session newSession = room.playerArrive(userInfo, ctx, new SessionEventHandler());
                 ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildRoomInfo(room));
                 final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
                 f.addListener(new ChannelFutureListener() {
@@ -122,7 +122,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                             return;
                         }
 
-                        ctx.close();
+                        //ctx.close();
                     }
                 });
             } else {
