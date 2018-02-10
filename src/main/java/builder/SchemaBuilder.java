@@ -7,23 +7,6 @@ import server.session.Session;
 import server.session.UserSession;
 
 public class SchemaBuilder {
-    public static FlatBufferBuilder buildCredentialToken(String token) {
-        FlatBufferBuilder builder = new FlatBufferBuilder(1);
-        int tokenId = builder.createString(token);
-        CredentialToken.startCredentialToken(builder);
-        CredentialToken.addToken(builder, tokenId);
-        int cred = CredentialToken.endCredentialToken(builder);
-        return buildMessage(builder, cred, Data.CredentialToken);
-    }
-
-    public static FlatBufferBuilder buildReconnectKey(String authKey) {
-        FlatBufferBuilder builder = new FlatBufferBuilder(1);
-        int  key = builder.createString(authKey);
-        ReconnectKey.startReconnectKey(builder);
-        ReconnectKey.addKey(builder, key);
-        int reconnectKey = ReconnectKey.endReconnectKey(builder);
-        return buildMessage(builder, reconnectKey, Data.ReconnectKey);
-    }
 
     public static FlatBufferBuilder buildMessage(FlatBufferBuilder builder, int data, byte dataType) {
         Message.startMessage(builder);
@@ -43,9 +26,24 @@ public class SchemaBuilder {
         return PlayerInfo.endPlayerInfo(builder);
     }
 
-    public static FlatBufferBuilder buildPlayer(Session s) {
+    public static FlatBufferBuilder buildPlayerArrive(Session s) {
         FlatBufferBuilder builder = new FlatBufferBuilder(1);
-        return buildMessage(builder, createPlayerInfo(builder, s), Data.PlayerInfo);
+        int playerInfo = createPlayerInfo(builder, s);
+        PlayerUpdate.startPlayerUpdate(builder);
+        PlayerUpdate.addStatus(builder, PlayerStatus.Arrive);
+        PlayerUpdate.addPlayer(builder, playerInfo);
+        int playerArrive = PlayerUpdate.endPlayerUpdate(builder);
+        return buildMessage(builder, playerArrive, Data.PlayerUpdate);
+    }
+
+    public static FlatBufferBuilder buildPlayerLeft(Session s) {
+        FlatBufferBuilder builder = new FlatBufferBuilder(1);
+        int playerInfo = createPlayerInfo(builder, s);
+        PlayerUpdate.startPlayerUpdate(builder);
+        PlayerUpdate.addStatus(builder, PlayerStatus.Left);
+        PlayerUpdate.addPlayer(builder, playerInfo);
+        int playerArrive = PlayerUpdate.endPlayerUpdate(builder);
+        return buildMessage(builder, playerArrive, Data.PlayerUpdate);
     }
 
     public static FlatBufferBuilder buildRoomInfo(Room r) {

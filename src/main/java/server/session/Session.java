@@ -11,7 +11,4 @@ public interface Session {
     long getCreatedTime();
     ChannelHandlerContext getChannel();
     void setChannel(ChannelHandlerContext channel);
-
-    EventHandler getHandler();
-    void setHandler(EventHandler e);
 }

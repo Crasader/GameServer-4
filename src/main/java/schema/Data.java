@@ -5,13 +5,11 @@ package schema;
 public final class Data {
   private Data() { }
   public static final byte NONE = 0;
-  public static final byte CredentialToken = 1;
-  public static final byte ReconnectKey = 2;
-  public static final byte JoinRoomCommand = 3;
-  public static final byte PlayerInfo = 4;
-  public static final byte RoomInfo = 5;
+  public static final byte JoinRoomCommand = 1;
+  public static final byte RoomInfo = 2;
+  public static final byte PlayerUpdate = 3;
 
-  public static final String[] names = { "NONE", "CredentialToken", "ReconnectKey", "JoinRoomCommand", "PlayerInfo", "RoomInfo", };
+  public static final String[] names = { "NONE", "JoinRoomCommand", "RoomInfo", "PlayerUpdate", };
 
   public static String name(int e) { return names[e]; }
 }

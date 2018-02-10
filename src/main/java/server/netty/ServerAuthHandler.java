@@ -1,64 +1,26 @@
 package server.netty;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import auth.FireBaseAuthModule;
 import auth.LoginAuth;
 import builder.SchemaBuilder;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
-import decoder.FlatBuffersDecoder;
 import info.UserInfo;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelId;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.util.AttributeKey;
-import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import schema.CredentialToken;
 import schema.Data;
 import schema.JoinRoomCommand;
 import schema.Message;
 import server.app.Room;
 import server.app.RoomManager;
-import server.event.impl.SessionEventHandler;
+import server.event.impl.PlayerArriveHandler;
 import server.netty.util.NettyUtils;
 import server.session.Session;
-import server.session.UserSession;
-
-import javax.xml.validation.Schema;
 
 
 /**
@@ -111,7 +73,17 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                 LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
                 channel.pipeline().remove(this);
-                Session newSession = room.playerArrive(userInfo, ctx, new SessionEventHandler());
+                channel.pipeline().addLast("RoomCommandHandler", new RoomCommandHandler(roomManager));
+
+                ChannelFuture closeFuture = channel.closeFuture();
+                closeFuture.addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        room.playerLeave(userId);
+                    }
+                });
+
+                Session newSession = room.playerArrive(userInfo, ctx, new PlayerArriveHandler());
                 ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildRoomInfo(room));
                 final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
                 f.addListener(new ChannelFutureListener() {
@@ -121,8 +93,6 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                             LOG.info("Send failed" + f.cause());
                             return;
                         }
-
-                        //ctx.close();
                     }
                 });
             } else {

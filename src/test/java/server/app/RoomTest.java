@@ -57,7 +57,6 @@ public class RoomTest {
     public void testEventHandler() {
         EventHandler fakeHandler = mock(EventHandler.class);
         Session s = r.playerArrive(userInfo, channel, fakeHandler);
-        s.setHandler(fakeHandler);
         Event e = new Event(EventType.NEW_PLAYER_ARRIVE);
 
         UserInfo userInfo2 = new UserInfo();
@@ -66,7 +65,6 @@ public class RoomTest {
         ChannelHandlerContext channel2 = mock(ChannelHandlerContext.class);
         Session s2 = r.playerArrive(userInfo2, channel2, fakeHandler);
         EventHandler fakeHandler2 = mock(EventHandler.class);
-        s2.setHandler(fakeHandler2);
 
         verify(fakeHandler).onEvent(EventType.NEW_PLAYER_ARRIVE, s2);
     }

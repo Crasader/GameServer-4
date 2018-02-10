@@ -3,10 +3,7 @@ package builder;
 import com.google.flatbuffers.FlatBufferBuilder;
 import io.netty.buffer.ByteBuf;
 import org.junit.Test;
-import schema.Data;
-import schema.Message;
-import schema.PlayerInfo;
-import schema.RoomInfo;
+import schema.*;
 import server.app.Room;
 import server.session.Session;
 import server.session.UserSession;
@@ -28,17 +25,33 @@ public class SchemaBuilderTest {
         return attr;
     }
     @Test
-    public void testBuildPlayer() {
+    public void testBuildPlayerArrive() {
         Map<String, Object> attr = buildAttr("userId", "nghia");
         Session s = new UserSession.UserSessionBuilder().sessionAttributes(attr).build();
-        FlatBufferBuilder builder = SchemaBuilder.buildPlayer(s);
+        FlatBufferBuilder builder = SchemaBuilder.buildPlayerArrive(s);
 
         ByteBuffer byteBuffer = ByteBuffer.wrap(builder.sizedByteArray());
         Message msg = Message.getRootAsMessage(byteBuffer);
-        assertEquals(msg.dataType(), Data.PlayerInfo);
-        PlayerInfo player = (PlayerInfo)msg.data(new PlayerInfo());
-        assertEquals(player.userId(), "userId");
-        assertEquals(player.name(), "nghia");
+        assertEquals(msg.dataType(), Data.PlayerUpdate);
+        PlayerUpdate player = (PlayerUpdate)msg.data(new PlayerUpdate());
+        assertEquals(player.player().userId(), "userId");
+        assertEquals(player.player().name(), "nghia");
+        assertEquals(player.status(), PlayerStatus.Arrive);
+    }
+
+    @Test
+    public void testBuildPlayerLeft() {
+        Map<String, Object> attr = buildAttr("userId", "nghia");
+        Session s = new UserSession.UserSessionBuilder().sessionAttributes(attr).build();
+        FlatBufferBuilder builder = SchemaBuilder.buildPlayerLeft(s);
+
+        ByteBuffer byteBuffer = ByteBuffer.wrap(builder.sizedByteArray());
+        Message msg = Message.getRootAsMessage(byteBuffer);
+        assertEquals(msg.dataType(), Data.PlayerUpdate);
+        PlayerUpdate player = (PlayerUpdate)msg.data(new PlayerUpdate());
+        assertEquals(player.player().userId(), "userId");
+        assertEquals(player.player().name(), "nghia");
+        assertEquals(player.status(), PlayerStatus.Left);
     }
 
     @Test

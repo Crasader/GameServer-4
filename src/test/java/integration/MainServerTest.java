@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
 
+import static java.lang.Thread.sleep;
 import static junit.framework.TestCase.assertEquals;
 
 /**
@@ -54,15 +55,15 @@ public class MainServerTest
         });
         thread.start();
         // make sure server gets off the ground
-        Thread.sleep(3000);
+        sleep(3000);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        Thread.sleep(1000);
+        sleep(1000);
         thread.interrupt();
         while (thread.isAlive()) {
-            Thread.sleep(250);
+            sleep(250);
         }
     }
 
@@ -76,7 +77,7 @@ public class MainServerTest
         outputStream.write(lengthBuffer.array());
         outputStream.write(joinbuf);
         outputStream.flush();
-        Thread.sleep(2000);
+        sleep(2000);
         return socket;
     }
 
@@ -94,7 +95,7 @@ public class MainServerTest
     }
 
     @Test
-    public void userJoinedRoomSuccessfully() throws Exception {
+    public void userJoinedRoomSuccessfullyAndLeave() throws Exception {
         Socket socket1 = userJoinRoom(token1, roomId);
         Socket socket2 = userJoinRoom(token2, roomId);
 
@@ -112,10 +113,19 @@ public class MainServerTest
         verifyPlayer(room2.players(1), "userId2", "nghiaround");
 
         Message msg3 = readMessage(socket1);
-        assertEquals(msg3.dataType(), Data.PlayerInfo);
-        PlayerInfo player = (PlayerInfo) msg3.data(new PlayerInfo());
-        assertEquals(player.userId(), "userId2");
-        assertEquals(player.name(), "nghiaround");
+        assertEquals(msg3.dataType(), Data.PlayerUpdate);
+        PlayerUpdate player = (PlayerUpdate) msg3.data(new PlayerUpdate());
+        assertEquals(player.player().userId(), "userId2");
+        assertEquals(player.player().name(), "nghiaround");
+        assertEquals(player.status(), PlayerStatus.Arrive);
+        socket1.close();
+
+       /* Message msg4 = readMessage(socket2);
+        assertEquals(msg4.dataType(), Data.PlayerUpdate);
+        PlayerUpdate playerLeft = (PlayerUpdate) msg4.data(new PlayerUpdate());
+        assertEquals(playerLeft.player().userId(), "userId1");
+        assertEquals(playerLeft.player().name(), "nghiaround");
+        assertEquals(playerLeft.status(), PlayerStatus.Arrive);*/
 
 
     }

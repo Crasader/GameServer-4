@@ -1,14 +1,10 @@
 package server.session;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import server.event.EventHandler;
-import server.event.impl.SessionEventHandler;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class UserSession implements Session{
@@ -18,8 +14,6 @@ public class UserSession implements Session{
     protected final Map<String, Object> sessionAttributes;
     protected final long createdTime;
     protected ChannelHandlerContext channel;
-
-    protected EventHandler handler;
 
     protected UserSession(UserSessionBuilder builder) {
         builder.setUp(this);
@@ -74,15 +68,6 @@ public class UserSession implements Session{
     @Override
     public void setChannel(ChannelHandlerContext channel) {
         this.channel = channel;
-    }
-
-    @Override
-    public EventHandler getHandler() {
-        return this.handler;
-    }
-
-    public void setHandler(EventHandler handler) {
-        this.handler = handler;
     }
 
     @Override
