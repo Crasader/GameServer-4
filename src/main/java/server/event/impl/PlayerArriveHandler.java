@@ -14,7 +14,8 @@ public class PlayerArriveHandler implements EventHandler {
     private static final Logger LOG = LoggerFactory.getLogger(PlayerArriveHandler.class);
 
     private Session session;
-    public PlayerArriveHandler() {
+    public PlayerArriveHandler(Session s) {
+        this.session = s;
     }
 
     @Override
@@ -63,10 +64,5 @@ public class PlayerArriveHandler implements EventHandler {
                 }
             }
         });
-    }
-
-    @Override
-    public void setSession(Session s) {
-        this.session = s;
     }
 }

@@ -17,16 +17,17 @@ public class PlayerLeftHandler implements EventHandler {
     private static final Logger LOG = LoggerFactory.getLogger(PlayerLeftHandler.class);
 
     private Session session;
-    public PlayerLeftHandler() {
+    public PlayerLeftHandler(Session s) {
+        this.session = s;
     }
 
     @Override
     public void onEvent(EventType event, Object e) {
         assert(session != null);
         ChannelHandlerContext channel = session.getChannel();
-        LOG.info("Inform other about new user arrive..............");
+        LOG.info("Inform other about player left the room..............");
         ChannelFuture f = channel.writeAndFlush(
-                NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildPlayerLeft(session)));
+                NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildPlayerLeft((Session)e)));
         f.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) {
@@ -38,8 +39,5 @@ public class PlayerLeftHandler implements EventHandler {
         });
     }
 
-    @Override
-    public void setSession(Session s) {
-        this.session = s;
-    }
+
 }

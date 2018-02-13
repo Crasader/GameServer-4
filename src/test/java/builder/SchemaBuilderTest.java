@@ -2,9 +2,12 @@ package builder;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 import io.netty.buffer.ByteBuf;
+import javafx.util.Pair;
 import org.junit.Test;
 import schema.*;
 import server.app.Room;
+import server.event.EventHandler;
+import server.event.EventType;
 import server.session.Session;
 import server.session.UserSession;
 
@@ -63,9 +66,9 @@ public class SchemaBuilderTest {
         Session s2 = new UserSession.UserSessionBuilder().sessionAttributes(attr2).build();
 
         Room r = new Room("Singapore");
-        List<Session>  sessions = new ArrayList<>();
-        sessions.add(s);
-        sessions.add(s2);
+        Map<Session, List<Pair<EventType, EventHandler>> >  sessions = new HashMap<>();
+        sessions.put(s, new ArrayList<>());
+        sessions.put(s2, new ArrayList<>());
         r.setPlayerSessions(sessions);
         FlatBufferBuilder builder = SchemaBuilder.buildRoomInfo(r);
         ByteBuffer byteBuffer = ByteBuffer.wrap(builder.sizedByteArray());

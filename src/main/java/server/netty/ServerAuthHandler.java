@@ -18,6 +18,7 @@ import schema.JoinRoomCommand;
 import schema.Message;
 import server.app.Room;
 import server.app.RoomManager;
+import server.event.impl.EventHandlerFactory;
 import server.event.impl.PlayerArriveHandler;
 import server.netty.util.NettyUtils;
 import server.session.Session;
@@ -83,7 +84,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                     }
                 });
 
-                Session newSession = room.playerArrive(userInfo, ctx, new PlayerArriveHandler());
+                Session newSession = room.playerArrive(userInfo, ctx, new EventHandlerFactory());
                 ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildRoomInfo(room));
                 final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
                 f.addListener(new ChannelFutureListener() {

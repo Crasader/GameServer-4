@@ -50,11 +50,11 @@ public class SchemaBuilder {
         FlatBufferBuilder builder = new FlatBufferBuilder(1);
         int len = r.getPlayerSessions().size();
         int[] players = new int[len];
-        for(int i = 0; i < len; ++i) {
-            Session s = r.getPlayerSessions().get(i);
+        int i = 0;
+        for(Session s: r.getPlayerSessions().keySet()) {
             int userId = builder.createString((String)s.getAttribute(UserSession.USER_ID));
             int displayName = builder.createString((String)s.getAttribute(UserSession.DISPLAY_NAME));
-            players[i] = PlayerInfo.createPlayerInfo(builder, userId, displayName);
+            players[i++] = PlayerInfo.createPlayerInfo(builder, userId, displayName);
         }
         int allPlayers = RoomInfo.createPlayersVector(builder, players);
         RoomInfo.startRoomInfo(builder);

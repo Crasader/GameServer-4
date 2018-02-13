@@ -120,14 +120,13 @@ public class MainServerTest
         assertEquals(player.status(), PlayerStatus.Arrive);
         socket1.close();
 
-       /* Message msg4 = readMessage(socket2);
+        sleep(1000);
+        Message msg4 = readMessage(socket2);
         assertEquals(msg4.dataType(), Data.PlayerUpdate);
         PlayerUpdate playerLeft = (PlayerUpdate) msg4.data(new PlayerUpdate());
         assertEquals(playerLeft.player().userId(), "userId1");
         assertEquals(playerLeft.player().name(), "nghiaround");
-        assertEquals(playerLeft.status(), PlayerStatus.Arrive);*/
-
-
+        assertEquals(playerLeft.status(), PlayerStatus.Left);
     }
 
     private void verifyPlayer(PlayerInfo player, String userId, String displayName) {

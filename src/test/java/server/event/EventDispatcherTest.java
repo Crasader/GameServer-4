@@ -18,10 +18,6 @@ public class EventDispatcherTest {
             x = (int)e;
         }
 
-        @Override
-        public void setSession(Session s) {
-        }
-
         public int getX() {
             return x;
         }
