@@ -8,8 +8,9 @@ public final class Data {
   public static final byte JoinRoomCommand = 1;
   public static final byte RoomInfo = 2;
   public static final byte PlayerUpdate = 3;
+  public static final byte ErrorMessage = 4;
 
-  public static final String[] names = { "NONE", "JoinRoomCommand", "RoomInfo", "PlayerUpdate", };
+  public static final String[] names = { "NONE", "JoinRoomCommand", "RoomInfo", "PlayerUpdate", "ErrorMessage", };
 
   public static String name(int e) { return names[e]; }
 }
