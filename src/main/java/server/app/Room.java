@@ -25,14 +25,15 @@ public class Room {
         }
     };
 
-    private Map<Session, List<Pair<EventType,EventHandler>> > playerSessions;
-    public Map<Session, List<Pair<EventType, EventHandler>> > getPlayerSessions() {
-        return playerSessions;
-    }
-    public void setPlayerSessions(Map<Session, List<Pair<EventType, EventHandler>> > playerSessions) {
-        this.playerSessions = playerSessions;
+    private List<PlayerManager> players;
+
+    public List<PlayerManager> getPlayers() {
+        return players;
     }
 
+    public void setPlayers(List<PlayerManager> players) {
+        this.players = players;
+    }
 
     public EventDispatcher getEventDispatcher() {
         return eventDispatcher;
@@ -42,44 +43,44 @@ public class Room {
 
     public Room(String id) {
         this.id = id;
-        playerSessions = new HashMap<>();
+        players = new ArrayList<>();
         eventDispatcher = new EventDispatcher();
     }
 
-    private Session getPlayerSession(String userId) {
-        for(Session s: playerSessions.keySet()) {
-            if (s.getAttribute(UserSession.USER_ID).equals(userId)) {
-                return s;
+    private PlayerManager getPlayer(String userId) {
+        for(PlayerManager player: players) {
+            if (player.getSession().getAttribute(UserSession.USER_ID).equals(userId)) {
+                return player;
             }
         }
         return null;
     }
 
     public synchronized void playerLeave(String userId) {
-        Session s = getPlayerSession(userId);
-        if (s == null) {
+        PlayerManager player = getPlayer(userId);
+        if (player == null) {
             LOG.error("Player leave the room but not able to find player session, userId:" + userId);
             return;
         }
-        List<Pair<EventType, EventHandler> > eventHandlers = playerSessions.getOrDefault(s, null);
+        List<Pair<EventType, EventHandler> > eventHandlers = player.getEventHandlers();
         if (eventHandlers != null) {
             for(Pair<EventType, EventHandler> pair: eventHandlers) {
                 eventDispatcher.removeListener(pair.getKey(), pair.getValue());
             }
-            playerSessions.remove(s);
+            players.remove(player);
             LOG.info("Player " + userId + " leaving the room: " + this.id);
         } else {
-            LOG.error("Not able to find session in playerSession, userId=" + s.getAttribute(UserSession.USER_ID));
+            LOG.error("Not able to find session in playerSession, userId=" + player.getSession().getAttribute(UserSession.USER_ID));
         }
-        eventDispatcher.dispatchEvent(new Event(EventType.PLAYER_LEFT), s);
+        eventDispatcher.dispatchEvent(new Event(EventType.PLAYER_LEFT), player.getSession());
     }
 
     public synchronized Session playerArrive(
             UserInfo userInfo, ChannelHandlerContext channel, EventHandlerFactory eventHandlerFactory) {
-        Session s = getPlayerSession(userInfo.getUserId());
+        PlayerManager s = getPlayer(userInfo.getUserId());
         if (s != null) {
-            s.setChannel(channel);
-            return s;
+            s.getSession().setChannel(channel);
+            return s.getSession();
         }
 
         //New session
@@ -93,15 +94,16 @@ public class Room {
             EventHandler eventHandler = eventHandlerFactory.buildEventHandler(eventType, newSession);
             eventHandlers.add(new Pair<EventType, EventHandler>(eventType, eventHandler));
         }
-        playerSessions.put(newSession, eventHandlers);
+        PlayerManager newPlayer = new PlayerManager(newSession, eventHandlers);
+        players.add(newPlayer);
         LOG.info("New player : " + userInfo.toString());
         eventDispatcher.dispatchEvent(new Event(EventType.NEW_PLAYER_ARRIVE), newSession);
         for(Pair<EventType, EventHandler> pair: eventHandlers) {
             eventDispatcher.addListener(pair.getKey(), pair.getValue());
         }
         //Debug
-        for(Session s1:playerSessions.keySet()) {
-            LOG.info("Player info   :" + s1.getAttribute(UserSession.USER_ID));
+        for(PlayerManager player:players) {
+            LOG.info("Player info   :" + player.getSession().getAttribute(UserSession.USER_ID));
         }
         return newSession;
     }

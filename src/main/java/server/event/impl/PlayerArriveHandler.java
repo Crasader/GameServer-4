@@ -4,6 +4,7 @@ import builder.SchemaBuilder;
 import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import server.app.PlayerManager;
 import server.event.EventHandler;
 import server.event.EventType;
 import server.netty.util.NettyUtils;
@@ -21,40 +22,11 @@ public class PlayerArriveHandler implements EventHandler {
     @Override
     public void onEvent(EventType event, Object e) {
         assert(session != null);
-
-        if (event == EventType.NEW_PLAYER_ARRIVE) {
-            Session session = (Session)e;
-            handleNewPlayerArrive(session);
-            return;
-        }
-        if (event == EventType.PLAYER_LEFT) {
-            Session session = (Session)e;
-            handlePlayerLeft(session);
-            return;
-        }
-    }
-
-    private void handlePlayerLeft(Session session) {
+        Session s = (Session)e;
         ChannelHandlerContext channel = session.getChannel();
         LOG.info("Inform other about new user arrive..............");
         ChannelFuture f = channel.writeAndFlush(
-                NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildPlayerLeft(session)));
-        f.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (!f.isSuccess()) {
-                    LOG.info("Send failed" + f.cause());
-                    return;
-                }
-            }
-        });
-    }
-
-    private void handleNewPlayerArrive(Session newSessionPlayer) {
-        ChannelHandlerContext channel = session.getChannel();
-        LOG.info("Inform other about new user arrive..............");
-        ChannelFuture f = channel.writeAndFlush(
-                NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildPlayerArrive(newSessionPlayer)));
+                NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildPlayerArrive(s)));
         f.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) {

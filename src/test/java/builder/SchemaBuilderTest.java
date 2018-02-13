@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import javafx.util.Pair;
 import org.junit.Test;
 import schema.*;
+import server.app.PlayerManager;
 import server.app.Room;
 import server.event.EventHandler;
 import server.event.EventType;
@@ -66,10 +67,10 @@ public class SchemaBuilderTest {
         Session s2 = new UserSession.UserSessionBuilder().sessionAttributes(attr2).build();
 
         Room r = new Room("Singapore");
-        Map<Session, List<Pair<EventType, EventHandler>> >  sessions = new HashMap<>();
-        sessions.put(s, new ArrayList<>());
-        sessions.put(s2, new ArrayList<>());
-        r.setPlayerSessions(sessions);
+        List<PlayerManager>  players = new ArrayList<>();
+        players.add(new PlayerManager(s, new ArrayList<>()));
+        players.add(new PlayerManager(s2, new ArrayList<>()));
+        r.setPlayers(players);
         FlatBufferBuilder builder = SchemaBuilder.buildRoomInfo(r);
         ByteBuffer byteBuffer = ByteBuffer.wrap(builder.sizedByteArray());
         Message msg = Message.getRootAsMessage(byteBuffer);

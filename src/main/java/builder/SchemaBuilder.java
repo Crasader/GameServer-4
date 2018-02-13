@@ -2,6 +2,7 @@ package builder;
 
 import schema.*;
 import com.google.flatbuffers.FlatBufferBuilder;
+import server.app.PlayerManager;
 import server.app.Room;
 import server.session.Session;
 import server.session.UserSession;
@@ -48,12 +49,12 @@ public class SchemaBuilder {
 
     public static FlatBufferBuilder buildRoomInfo(Room r) {
         FlatBufferBuilder builder = new FlatBufferBuilder(1);
-        int len = r.getPlayerSessions().size();
+        int len = r.getPlayers().size();
         int[] players = new int[len];
         int i = 0;
-        for(Session s: r.getPlayerSessions().keySet()) {
-            int userId = builder.createString((String)s.getAttribute(UserSession.USER_ID));
-            int displayName = builder.createString((String)s.getAttribute(UserSession.DISPLAY_NAME));
+        for(PlayerManager s: r.getPlayers()) {
+            int userId = builder.createString((String)s.getSession().getAttribute(UserSession.USER_ID));
+            int displayName = builder.createString((String)s.getSession().getAttribute(UserSession.DISPLAY_NAME));
             players[i++] = PlayerInfo.createPlayerInfo(builder, userId, displayName);
         }
         int allPlayers = RoomInfo.createPlayersVector(builder, players);
