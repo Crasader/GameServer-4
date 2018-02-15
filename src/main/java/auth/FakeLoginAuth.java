@@ -13,7 +13,7 @@ public class FakeLoginAuth implements LoginAuth{
     public UserInfo getUserRecord(String userid) throws Exception {
         UserInfo info = new UserInfo();
         info.setUserId(userid);
-        info.setDisplayName("nghiaround");
+        info.setDisplayName("nghiaround1");
         return info;
     }
 }

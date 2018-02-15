@@ -17,7 +17,6 @@ public class FireBaseLoginAuth implements LoginAuth{
         userInfo.setDisplayName(record.getDisplayName());
         userInfo.setUserId(record.getUid());
         return userInfo;
-        //System.out.println("Successfully fetched user data: " + userRecord.getUid());
     }
 
 }
