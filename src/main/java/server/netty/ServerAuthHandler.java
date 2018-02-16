@@ -14,6 +14,7 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import schema.Data;
+import schema.ErrorCode;
 import schema.JoinRoomCommand;
 import schema.Message;
 import server.app.Room;
@@ -70,6 +71,7 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
             UserInfo userInfo = this.loginAuth_.getUserRecord(userId);
             LOG.info("roomManager=" + roomManager);
             Room room = roomManager.getRoom(cmd.roomId());
+            ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildErrorMessage(ErrorCode.Unknown));
             if (!userId.isEmpty() && room!=null) {
                 LOG.info("User: '" + userId + "' logged in successfully");
                 Channel channel = ctx.channel();
@@ -85,20 +87,27 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
                 });
 
                 Session newSession = room.playerArrive(userInfo, ctx, new EventHandlerFactory());
-                ByteBuf buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildRoomInfo(room));
-                final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
-                f.addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) {
-                        if (!f.isSuccess()) {
-                            LOG.info("Send failed" + f.cause());
-                            return;
-                        }
-                    }
-                });
+                buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildRoomInfo(room));
             } else {
                 LOG.info("User :" + userId + " failed to login");
+                byte errorCode = ErrorCode.Unknown;
+                if (userId.isEmpty()) {
+                    errorCode = ErrorCode.INVALID_AUTH;
+                } else if (room == null) {
+                    errorCode = ErrorCode.ROOM_NOT_FOUND;
+                }
+                buf = NettyUtils.getLengthPrependedByteBuf(SchemaBuilder.buildErrorMessage(errorCode));
             }
+            final ChannelFuture f = ctx.writeAndFlush(buf); // (3)
+            f.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) {
+                    if (!f.isSuccess()) {
+                        LOG.info("Send failed" + f.cause());
+                        return;
+                    }
+                }
+            });
             return;
         } finally {
             ReferenceCountUtil.release(msgData);
@@ -113,7 +122,6 @@ public class ServerAuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void setRoomManager(RoomManager roomManager) {
-        LOG.info("setRoommanager=" + roomManager);
         this.roomManager = roomManager;
     }
 

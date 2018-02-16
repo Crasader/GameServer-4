@@ -7,6 +7,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseCredentials;
+import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -98,11 +99,10 @@ public class CommandLineGame {
         if (command == 1) {
             print("Login in --> email:" + email);
             UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmailAsync(email).get();
-            print("DisplayName=" + userRecord.getDisplayName());
-            String token = userRecord.getUid();
+            String fakeToken = userRecord.getUid();
             print("Join room --> ");
             gameState = GameState.JOINING_ROOM;
-            userJoinRoom(token, SINGAPORE);
+            userJoinRoom(fakeToken, SINGAPORE);
         }
     }
 
@@ -141,7 +141,8 @@ public class CommandLineGame {
     }
 
     private void handleRecieved(Message m) {
-        print("Received message type :" + Data.names[m.dataType()]);
+        print("Received message type :" + DebugUtil.toString(m));
+
         if (gameState == GameState.JOINING_ROOM) {
             if (m.dataType() == Data.RoomInfo) {
                 gameState = GameState.JOINED_ROOM;

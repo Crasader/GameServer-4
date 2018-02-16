@@ -7,6 +7,7 @@ import info.UserInfo;
 
 public class FireBaseLoginAuth implements LoginAuth{
     public String getLoginUserId(String idToken) throws Exception {
+        System.out.println("Debug idToken:" + idToken);
         FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdTokenAsync(idToken).get();
         return decodedToken.getUid();
     }
@@ -15,6 +16,7 @@ public class FireBaseLoginAuth implements LoginAuth{
         UserRecord record = FirebaseAuth.getInstance().getUserAsync(userid).get();
         UserInfo userInfo = new UserInfo();
         userInfo.setDisplayName(record.getDisplayName());
+        System.out.println("Debug displayName=" + record.getDisplayName());
         userInfo.setUserId(record.getUid());
         return userInfo;
     }

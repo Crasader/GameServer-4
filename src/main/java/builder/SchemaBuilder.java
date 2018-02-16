@@ -7,7 +7,18 @@ import server.app.Room;
 import server.session.Session;
 import server.session.UserSession;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SchemaBuilder {
+
+    private static final Map<Byte, String> errorMessages;
+    static
+    {
+        errorMessages = new HashMap<>();
+        errorMessages.put(ErrorCode.INVALID_AUTH, "INVALID LOGIN");
+        errorMessages.put(ErrorCode.ROOM_NOT_FOUND, "Not able to find a room");
+    }
 
     public static FlatBufferBuilder buildMessage(FlatBufferBuilder builder, int data, byte dataType) {
         Message.startMessage(builder);
@@ -73,5 +84,16 @@ public class SchemaBuilder {
         JoinRoomCommand.addToken(builder, authTokenInt);
         int joinRoomCmd = JoinRoomCommand.endJoinRoomCommand(builder);
         return buildMessage(builder, joinRoomCmd, Data.JoinRoomCommand);
+    }
+
+    public static FlatBufferBuilder buildErrorMessage(byte errorCode) {
+        String errorMessage = errorMessages.getOrDefault(errorCode, "Internal error!");
+        FlatBufferBuilder builder = new FlatBufferBuilder(1);
+        int errorMsg = builder.createString(errorMessage);
+        ErrorMessage.startErrorMessage(builder);
+        ErrorMessage.addCode(builder, errorCode);
+        ErrorMessage.addError(builder, errorMsg);
+        int errorInt = ErrorMessage.endErrorMessage(builder);
+        return buildMessage(builder, errorInt, Data.ErrorMessage);
     }
 }

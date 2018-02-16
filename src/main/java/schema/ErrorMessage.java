@@ -14,21 +14,25 @@ public final class ErrorMessage extends Table {
   public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; }
   public ErrorMessage __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public String error() { int o = __offset(4); return o != 0 ? __string(o + bb_pos) : null; }
-  public ByteBuffer errorAsByteBuffer() { return __vector_as_bytebuffer(4, 1); }
+  public byte code() { int o = __offset(4); return o != 0 ? bb.get(o + bb_pos) : 0; }
+  public String error() { int o = __offset(6); return o != 0 ? __string(o + bb_pos) : null; }
+  public ByteBuffer errorAsByteBuffer() { return __vector_as_bytebuffer(6, 1); }
 
   public static int createErrorMessage(FlatBufferBuilder builder,
+      byte code,
       int errorOffset) {
-    builder.startObject(1);
+    builder.startObject(2);
     ErrorMessage.addError(builder, errorOffset);
+    ErrorMessage.addCode(builder, code);
     return ErrorMessage.endErrorMessage(builder);
   }
 
-  public static void startErrorMessage(FlatBufferBuilder builder) { builder.startObject(1); }
-  public static void addError(FlatBufferBuilder builder, int errorOffset) { builder.addOffset(0, errorOffset, 0); }
+  public static void startErrorMessage(FlatBufferBuilder builder) { builder.startObject(2); }
+  public static void addCode(FlatBufferBuilder builder, byte code) { builder.addByte(0, code, 0); }
+  public static void addError(FlatBufferBuilder builder, int errorOffset) { builder.addOffset(1, errorOffset, 0); }
   public static int endErrorMessage(FlatBufferBuilder builder) {
     int o = builder.endObject();
-    builder.required(o, 4);  // error
+    builder.required(o, 6);  // error
     return o;
   }
 }
