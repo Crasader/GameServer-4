@@ -26,18 +26,7 @@ import server.session.Session;
 
 
 /**
- * Class used to authenticate users. Current implementation should handle
- * FlatBuffers Serialized credentials as ByteBufs. Each serialized Credentials
- * should be prefixed by a 4 byte integer indicating the size in bytes of the
- * serialized FlatBuffer OR a JSON object conforming to the following schema:
- * {username: someUser, password: somePass}
- *
- * Upon successful registration or authentication of the provided
- * username/password pair, server.netty.ServerAuthHandler removes itself from the pipeline
- * with handlers that are useful for server functionality.
- *
- * @author jalbatross (Joey Albano)
- *
+ * Class used to handle user joining room
  */
 
 public class ServerAuthHandler extends ChannelInboundHandlerAdapter {

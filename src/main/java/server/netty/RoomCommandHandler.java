@@ -13,9 +13,6 @@ import server.app.RoomManager;
 
 /**
  * Class used to handle room command from users joined in the room.
- *
- * @author jalbatross (Joey Albano)
- *
  */
 
 public class RoomCommandHandler extends ChannelInboundHandlerAdapter {
