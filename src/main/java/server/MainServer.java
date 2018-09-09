@@ -107,7 +107,7 @@ public class MainServer {
 
     private void setUpFireBase() throws Exception {
         FileInputStream serviceAccount =
-                new FileInputStream("/Users/nghiaround/Desktop/key.json");
+                new FileInputStream("/Users/nghiaround/firebase_key.json");
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredential(FirebaseCredentials.fromCertificate(serviceAccount))
                 .setDatabaseUrl("https://pokerg-bf08c.firebaseio.com")
