@@ -58,8 +58,6 @@ public class MainServer {
         setUpFireBase();
         setupDefaultRoom();
 
-        final SslContext sslCtx;
-        sslCtx = null;
         System.out.println("Running server on port " + this.port);
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
