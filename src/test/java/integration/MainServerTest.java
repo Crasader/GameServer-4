@@ -104,19 +104,19 @@ public class MainServerTest
         assertEquals(msg1.dataType(), Data.RoomInfo);
         RoomInfo room1 = (RoomInfo)msg1.data(new RoomInfo());
         assertEquals(room1.playersLength(), 1);
-        verifyPlayer(room1.players(0), "userId1", "nghiaround");
+        verifyPlayer(room1.players(0), "userId1", "Nghia_userId1");
 
         assertEquals(msg2.dataType(), Data.RoomInfo);
         RoomInfo room2 = (RoomInfo)msg2.data(new RoomInfo());
         assertEquals(room2.playersLength(), 2);
-        verifyPlayer(room2.players(0), "userId1", "nghiaround");
-        verifyPlayer(room2.players(1), "userId2", "nghiaround");
+        verifyPlayer(room2.players(0), "userId1", "Nghia_userId1");
+        verifyPlayer(room2.players(1), "userId2", "Nghia_userId2");
 
         Message msg3 = readMessage(socket1);
         assertEquals(msg3.dataType(), Data.PlayerUpdate);
         PlayerUpdate player = (PlayerUpdate) msg3.data(new PlayerUpdate());
         assertEquals(player.player().userId(), "userId2");
-        assertEquals(player.player().name(), "nghiaround");
+        assertEquals(player.player().name(), "Nghia_userId2");
         assertEquals(player.status(), PlayerStatus.Arrive);
         socket1.close();
 
@@ -125,7 +125,7 @@ public class MainServerTest
         assertEquals(msg4.dataType(), Data.PlayerUpdate);
         PlayerUpdate playerLeft = (PlayerUpdate) msg4.data(new PlayerUpdate());
         assertEquals(playerLeft.player().userId(), "userId1");
-        assertEquals(playerLeft.player().name(), "nghiaround");
+        assertEquals(playerLeft.player().name(), "Nghia_userId1");
         assertEquals(playerLeft.status(), PlayerStatus.Left);
     }
 
